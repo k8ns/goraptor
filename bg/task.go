@@ -20,7 +20,7 @@ type Counter interface {
 	Inc()
 }
 
-type Process struct {
+type Task struct {
 	Name       string
 	Job        func() error
 	Interval   time.Duration
@@ -32,7 +32,7 @@ type Process struct {
 	muProc     sync.Mutex
 }
 
-func (p *Process) Start(ctx context.Context, wg *sync.WaitGroup) {
+func (p *Task) Start(ctx context.Context, wg *sync.WaitGroup) {
 	p.muProc.Lock()
 	defer p.muProc.Unlock()
 
@@ -67,31 +67,33 @@ func (p *Process) Start(ctx context.Context, wg *sync.WaitGroup) {
 	}()
 }
 
-func (p *Process) doJob() {
-	if p.status == StatusWaiting {
-		p.status = StatusRunning
-		log.Printf("bg proc running %s", p.Name)
-		err := p.Job()
-		if err != nil {
-			p.status = StatusError
-			log.Println("bg proc error", p.Name, err)
-			p.ErrCounter.Inc()
-		} else {
-			p.OkCounter.Inc()
-		}
-		p.status = StatusWaiting
-		log.Printf("bg proc waiting %s", p.Name)
+func (p *Task) doJob() {
+	if p.status != StatusWaiting {
+		return
 	}
+
+	p.status = StatusRunning
+	log.Printf("bg proc running %s", p.Name)
+	err := p.Job()
+	if err != nil {
+		p.status = StatusError
+		log.Println("bg proc error", p.Name, err)
+		p.ErrCounter.Inc()
+	} else {
+		p.OkCounter.Inc()
+	}
+	p.status = StatusWaiting
+	log.Printf("bg proc waiting %s", p.Name)
 }
 
-func (p *Process) Stop() {
+func (p *Task) Stop() {
 	p.stop()
 }
 
-func (p *Process) Status() string {
+func (p *Task) Status() string {
 	return p.status
 }
 
-func (p *Process) String() string {
+func (p *Task) String() string {
 	return fmt.Sprintf("%s - %s", p.Name, p.status)
 }

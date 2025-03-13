@@ -6,7 +6,7 @@ import (
 )
 
 type Manager struct {
-	BgProcesses []*Process
+	BgProcesses []*Task
 	stop        func()
 	active      bool
 	mu          sync.Mutex
@@ -14,7 +14,7 @@ type Manager struct {
 
 func NewManager() *Manager {
 	return &Manager{
-		BgProcesses: make([]*Process, 0),
+		BgProcesses: make([]*Task, 0),
 	}
 }
 
@@ -49,6 +49,6 @@ func (m *Manager) Status() []string {
 	return ret
 }
 
-func (m *Manager) Add(p *Process) {
+func (m *Manager) Add(p *Task) {
 	m.BgProcesses = append(m.BgProcesses, p)
 }
