@@ -44,7 +44,7 @@ func (c *Container) Get(name string) interface{} {
 
 	instance, exists := c.instances[name]
 	if !exists {
-		panic(fmt.Sprintf("Service '%s' not registered", name))
+		panic(fmt.Sprintf("service '%s' is not registered", name))
 	}
 
 	return instance
